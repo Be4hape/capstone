@@ -13,12 +13,12 @@ font_test = pygame.font.SysFont(None, 100)
 done = False
 clock = pygame.time.Clock()
 
-shape = pygame.image.load('C:/Users/solb/Desktop/졸작/shape.png')
+shape = pygame.image.load('shape.png')
 
 class Dot(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.image.load('C:/Users/solb/Desktop/졸작/dot.png')
+        self.image = pygame.image.load('dot.png')
         self.rect = self.image.get_rect()
         self.rect.x = 1200
         self.rect.y = 400
