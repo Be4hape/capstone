@@ -3,7 +3,5 @@ class BusinessCard:
                 self.name = name
                 self.email = email
                 self.addr = addr
-        def printa(self):
+        def printa():
                 return print('fuck')
-
-                

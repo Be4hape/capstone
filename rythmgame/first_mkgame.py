@@ -13,15 +13,30 @@ font_test = pygame.font.SysFont(None, 100)
 done = False
 clock = pygame.time.Clock()
 
-shape = pygame.image.load('shape.png')
+# 이미지 경로 변경
+shape = pygame.image.load('C:/Users/solb/Desktop/capstone/capstone/rythmgame/dot.png')
+button_font = pygame.font.SysFont(None, 75)
+
+# status로 게임 상태 구분, menu, map, game, pause 등
+game_state = 'menu'
+
+# 맵의 갯수 및 정보
+maps = ["Map 1", "Map 2", "Map 3"]
+
+current_map = None  # 선택된 맵
 
 class Dot(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.image.load('dot.png')
+        # 이미지 경로 변경
+        self.image = pygame.image.load('C:/Users/solb/Desktop/capstone/capstone/rythmgame/dot.png')
         self.rect = self.image.get_rect()
+
+        # 초기 위치 설정
         self.rect.x = 1200
         self.rect.y = 400
+
+        # 속도 설정
         self.speed_x = -10
         self.speed_y = 0
 
@@ -35,56 +50,130 @@ class Dot(pygame.sprite.Sprite):
 
     def remove(self):
         global score
-        # x 좌표가 150과 250 사이에 있으면 Dot 객체 제거
         if 150 <= self.rect.x <= 250:
             score += 1
             self.kill()
 
+
+# 버튼 생성 함수
+def draw_button(text, x, y, width, height):
+    pygame.draw.rect(screen, (0, 255, 0), [x, y, width, height])
+    button_text = button_font.render(text, True, (0, 0, 0))
+    screen.blit(button_text, (x + 10, y + 10))
+
+
+# 버튼 클릭 감지 함수
+def is_button_clicked(mouse_pos, x, y, width, height):
+    return x <= mouse_pos[0] <= x + width and y <= mouse_pos[1] <= y + height
+
+
 def runGame():
-    global done, score
+    global done, score, game_state, current_map
 
     all_sprites = pygame.sprite.Group()
     start_time = pygame.time.get_ticks()
 
-    spawn_times = [3.0, 3.7, 4.0, 4.7, 5.4, 5.7, 6.4, 6.9, 7.3, 7.8, 8.2, 8.7, 9.1,
-                   9.8, 10.2, 10.8, 11.5, 12.2, 12.7, 13.1, 13.6, 14.1, 14.8, 15.5,
-                   15.8, 16.5, 17.2, 17.5, 18.2, 18.7, 19.1, 19.6, 20.0, 20.5, 20.9,
-                   21.6, 22.0, 22.6, 23.3, 24.0, 24.5, 24.9, 25.4, 25.9, 26.6, 27.3,
-                   27.6, 28.3, 29.0, 29.3, 30.0, 30.5, 30.9, 31.4, 31.8, 32.3, 32.7,
-                   33.4, 33.8, 34.4, 35.1, 35.8, 36.3, 36.7, 37.2, 37.7, 38.4, 39.1,
-                   39.4, 40.1, 40.8, 41.1, 41.8, 42.3, 42.7, 43.2, 43.6, 44.1, 44.5, 45.2, 45.6, 46.2, 46.9, 47.6, 48.1, 48.5, 49.0, 49.5]
+    spawn_times = []
 
     while not done:
         clock.tick(60)
         screen.fill(WHITE)
 
-        # 지정된 시간마다 Dot 객체 생성
-        current_time = pygame.time.get_ticks() / 1000
-        for spawn_time in spawn_times:
-            if current_time >= spawn_time and len(all_sprites) < 10:
-                dot = Dot()
-                all_sprites.add(dot)
-                spawn_times.remove(spawn_time)
-                break
+        # 게임 상태가 메뉴일 때
+        if game_state == 'menu':
+            draw_button("Start Game", 500, 300, 300, 100)
 
-        # 모든 Dot 객체 업데이트 및 화면에 그리기
-        all_sprites.update()
-        all_sprites.draw(screen)
-        text = font_test.render(str(score), True, (0, 0, 0))
-        screen.blit(text, (100, 100))
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    done = True
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
 
-        # 스페이스바를 눌렀을 때 Dot 객체 제거
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_SPACE]:
-            for dot in all_sprites:
-                dot.remove()
+                    if is_button_clicked(mouse_pos, 500, 300, 300, 100):
+                        game_state = 'map'  # 맵 선택 화면으로 이동
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                done = True
-                
-        screen.blit(shape, (205, 395))
+        # 맵 선택 화면
+        elif game_state == 'map':
+            # 가로로 버튼들을 나열하기 위해 각 버튼의 x 좌표 변경
+            for i, map_name in enumerate(maps):
+                draw_button(map_name, 200 + i * 350, 300, 300, 100)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    done = True
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+
+                    for i, map_name in enumerate(maps):
+                        if is_button_clicked(mouse_pos, 200 + i * 350, 300, 300, 100):
+                            current_map = map_name  # 선택된 맵 저장
+                            
+                            # 각 맵 파일에서 악보 데이터를 가져옴
+                            if current_map == "Map 1":
+                                from map1 import spawn_times
+                            elif current_map == "Map 2":
+                                from map2 import spawn_times
+                            elif current_map == "Map 3":
+                                from map3 import spawn_times
+                            
+                            game_state = 'game'  # 게임 상태로 이동
+                            start_time = pygame.time.get_ticks()  # 타이머 리셋
+
+        # 게임 실행 상태일 때
+        elif game_state == 'game':
+            current_time = pygame.time.get_ticks() / 1000
+            for spawn_time in spawn_times:
+                if current_time >= spawn_time and len(all_sprites) < 10:
+                    dot = Dot()
+                    all_sprites.add(dot)
+                    spawn_times.remove(spawn_time)
+                    break
+
+            all_sprites.update()
+            all_sprites.draw(screen)
+            text = font_test.render(str(score), True, (0, 0, 0))
+            screen.blit(text, (100, 100))
+
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_SPACE]:
+                for dot in all_sprites:
+                    dot.remove()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    done = True
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        game_state = 'pause'  # 일시정지 상태로 전환
+
+            screen.blit(shape, (205, 395))
+
+        # 게임 상태가 일시정지일 때
+        elif game_state == 'pause':
+            draw_button("Resume", 500, 200, 300, 100)
+            draw_button("Options", 500, 350, 300, 100)
+            draw_button("Exit", 500, 500, 300, 100)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    done = True
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+
+                    if is_button_clicked(mouse_pos, 500, 200, 300, 100):
+                        game_state = 'game'  # 게임 재개
+                    elif is_button_clicked(mouse_pos, 500, 350, 300, 100):
+                        print("Options clicked")
+                    elif is_button_clicked(mouse_pos, 500, 500, 300, 100):
+                        done = True  # 게임 종료
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        game_state = 'game'  # ESC를 다시 누르면 게임 재개
+
         pygame.display.update()
+
 
 runGame()
 pygame.quit()
