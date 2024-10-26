@@ -1,6 +1,8 @@
 import pygame
 import random
-from image_loader import load_images  # 이미지 로더 모듈 가져오기
+from s_image_loader import load_images  # 이미지 로더 모듈 가져오기
+
+
 
 pygame.init()
 
@@ -15,7 +17,7 @@ done = False
 clock = pygame.time.Clock()
 
 # 이미지 로딩
-images = load_images()  # 이미지 로드
+images = load_images(size[0], size[1])  # 이미지 로드
 
 button_font = pygame.font.SysFont(None, 75)
 
